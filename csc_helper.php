@@ -231,6 +231,37 @@ if (!empty($_GET['run_time_test']) && $_GET['run_time_test'] === '1') {
     // Stop time-measurement and display result.
     $time_elapsed_secs = microtime(true) - $start;
     echo $time_elapsed_secs;
+
+
+
+
+
+
+
+
+
+
+    // Caching API
+
+    echo '<h2>Read from Server Cache using API</h2>';
+
+    $key = 'time-test_example-dataset-1';
+    $result = file_fetch($key);
+
+    // Save data
+    cache_store('example', 'time-test', $result);
+
+    // Start time-measurement.
+    $start = microtime(true);
+
+    // Run loops.
+    for ($i = 0; $i < $loops; $i++) {
+        cache_fetch('example', 'time-test');
+    }
+
+    // Stop time-measurement and display result.
+    $time_elapsed_secs = microtime(true) - $start;
+    echo $time_elapsed_secs;
 }
 
 function access_data_via($type, $random = false) {

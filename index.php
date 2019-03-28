@@ -63,7 +63,6 @@ if (!empty($_GET['mode']) && $_GET['mode'] === 'normal') {
         echo '<script src="libs_client/jquery-3.3.1.js"></script>'.PHP_EOL;
         echo '<script src="libs_client/js.cookie.js"></script>'.PHP_EOL;
         echo '<script src="cache.js"></script>'.PHP_EOL;
-        echo '<script src="libs_client/script.js"></script>'.PHP_EOL;
     echo '</head>'.PHP_EOL;
 
     echo '<body>'.PHP_EOL;

@@ -10,12 +10,12 @@
 
 if (!defined('ABSPATH')) exit;
 
-include_once('csc/cache.php');
+include_once('cache.php');
 
 function client_cache_front_scripts() {
     $plugin_url = plugin_dir_url(__FILE__);
-    wp_enqueue_script('client-cache-cookie', $plugin_url.'csc/libs_client/js.cookie.js', array('jquery'));
-    wp_enqueue_script('client-cache', $plugin_url.'csc/cache.js', array('jquery'));
+    wp_enqueue_script('client-cache-cookie', $plugin_url.'libs_client/js.cookie.js', array('jquery'));
+    wp_enqueue_script('client-cache', $plugin_url.'cache.js', array('jquery'));
 }
 add_action('wp_enqueue_scripts', 'client_cache_front_scripts');
 

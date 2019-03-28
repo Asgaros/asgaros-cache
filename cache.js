@@ -178,3 +178,25 @@ function load_cacheable_view(component, identifier, destination) {
         console.log('Load view from endpoint ...');
     });
 }
+
+function cacheable_request(component, identifier, callback, location) {
+    var data = cache_fetch(component, identifier, 'data');
+    var version = 0;
+
+    if (data !== false) {
+        version = data.version;
+    }
+
+    location = location+'?component='+component+'&identifier='+identifier+'&version='+version;
+
+    $.ajax({
+        url: location
+    }).done(function(response) {
+        if (response !== 'up-to-date') {
+            response = JSON.parse(response);
+            data = cache_store(component, identifier, 'data', response.data, response.version);
+        }
+
+        callback(data);
+    });
+}

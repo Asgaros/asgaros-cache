@@ -1,5 +1,7 @@
 // https://www.w3schools.com/html/html5_webstorage.asp
 $(document).ready(function() {
+    var location = 'http://localhost/wordpress/wp-content/plugins/asgaros-cache/index.php';
+
     $('#rest-request-normal-default').click(function() {
         rest_request_default();
     });
@@ -9,7 +11,11 @@ $(document).ready(function() {
     });
 
     $('#rest-request-normal-versioning').click(function() {
-        rest_request_versioning();
+        cacheable_request('example', 'test-data', continue_processing, location);
+    });
+
+    $('#rest-request-wordpress').click(function() {
+        rest_request_wordpress();
     });
 
     // https://www.tutorialdocs.com/article/indexeddb-tutorial.html

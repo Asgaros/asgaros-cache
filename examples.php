@@ -22,7 +22,4 @@ function server_cache_example() {
     }
 }
 
-print_r('<pre>');
-print_r(apcu_cache_info());
-print_r('</pre>');
 //server_cache_example();

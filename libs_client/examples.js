@@ -1,6 +1,14 @@
 // https://www.w3schools.com/html/html5_webstorage.asp
 $(document).ready(function() {
-    $('#button-rest').click(function() {
+    $('#rest-request-normal-default').click(function() {
+        rest_request_default();
+    });
+
+    $('#rest-request-normal-caching').click(function() {
+        rest_request_caching();
+    });
+
+    $('#rest-request-normal-versioning').click(function() {
         rest_request_versioning();
     });
 
@@ -39,9 +47,15 @@ function client_cache_example() {
 function rest_request_default() {
     var location = 'http://localhost/wordpress/wp-content/plugins/asgaros-cache/index.php?component=example&identifier=test-data';
 
+    continue_processing('Request:');
+    continue_processing(location);
+
     $.ajax({
         url: location
     }).done(function(response) {
+        continue_processing('Response:');
+        continue_processing(response);
+
         response = JSON.parse(response);
         continue_processing(response);
     });
@@ -53,9 +67,15 @@ function rest_request_caching() {
     if (data === false) {
         var location = 'http://localhost/wordpress/wp-content/plugins/asgaros-cache/index.php?component=example&identifier=test-data';
 
+        continue_processing('Request:');
+        continue_processing(location);
+
         $.ajax({
             url: location
         }).done(function(response) {
+            continue_processing('Response:');
+            continue_processing(response);
+
             response = JSON.parse(response);
             data = cache_store('example', 'test-data', 'data', response.data);
             continue_processing(data);
@@ -75,6 +95,9 @@ function rest_request_versioning() {
 
     var location = 'http://localhost/wordpress/wp-content/plugins/asgaros-cache/index.php?component=example&identifier=test-data&version='+version;
 
+    continue_processing('Request:');
+    continue_processing(location);
+
     $.ajax({
         url: location
     }).done(function(response) {
@@ -86,7 +109,6 @@ function rest_request_versioning() {
             data = cache_store('example', 'test-data', 'data', response.data, response.version);
         }
 
-        continue_processing('Cached Data:');
         continue_processing(data);
     });
 }

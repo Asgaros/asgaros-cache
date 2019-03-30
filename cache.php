@@ -80,7 +80,7 @@ function cache_flush() {
     }
 }
 
-function cacheable_endpoint($component, $identifier, $callback) {
+function cacheable_endpoint($component, $identifier, $callback, $return = false) {
     // Check that required parameters are not empty.
     if (empty($_GET['component']) || empty($_GET['identifier'])) {
         return;
@@ -118,7 +118,11 @@ function cacheable_endpoint($component, $identifier, $callback) {
         $data = json_encode($data);
     }
 
-    echo $data;
+    if ($return === true) {
+        return $data;
+    } else {
+        echo $data;
+    }
 }
 
 function cacheable_view($component, $identifier, $callback) {

@@ -29,7 +29,7 @@ function cache_the_content($content) {
 
     return $content;
 }
-add_filter('the_content', 'cache_the_content');
+//add_filter('the_content', 'cache_the_content');
 
 
 
@@ -81,3 +81,42 @@ $cache = new Cache();
 $cache->register_option_caching('WPLANG');
 $cache->register_option_caching('can_compress_scripts');
 $cache->register_option_caching('theme_switched');
+
+
+
+
+
+// Register WordPress REST-Endpoint.
+function cacheable_get_posts_of_user($data) {
+    $_GET['component'] = 'example';
+    $_GET['identifier'] = 'get-posts-of-user-'.$data['id'];
+    $_GET['version'] = $data['version'];
+
+    $get_posts_of_user = function() use ($data) {
+        $posts = get_posts(array(
+            'author' => $data['id'],
+        ));
+
+        if (empty($posts)) {
+            return null;
+        }
+
+        return $posts;
+    };
+
+    return cacheable_endpoint('example', 'get-posts-of-user-'.$data['id'], $get_posts_of_user, true);
+}
+
+
+function register_endpoints() {
+    $namespace = 'cacheable';
+    $route = '/component=example&identifier=get-posts-of-user-(?P<id>\d+)&version=(?P<version>\d+)';
+    $options = array(
+        'methods' => 'GET',
+        'callback' => 'cacheable_get_posts_of_user'
+    );
+
+    register_rest_route($namespace, $route, $options);
+}
+
+add_action('rest_api_init', 'register_endpoints');

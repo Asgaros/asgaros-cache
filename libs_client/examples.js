@@ -1,6 +1,6 @@
 // https://www.w3schools.com/html/html5_webstorage.asp
 $(document).ready(function() {
-    var location = 'http://localhost/wordpress/wp-content/plugins/asgaros-cache/index.php';
+    var location = 'http://localhost/wordpress/wp-content/plugins/asgaros-cache/index.php?';
 
     $('#rest-request-normal-default').click(function() {
         rest_request_default();
@@ -15,7 +15,9 @@ $(document).ready(function() {
     });
 
     $('#rest-request-wordpress').click(function() {
-        rest_request_wordpress();
+        location = 'http://localhost/wordpress/wp-json/cacheable/';
+
+        cacheable_request('example', 'get-posts-of-user-1', continue_processing, location);
     });
 
     // https://www.tutorialdocs.com/article/indexeddb-tutorial.html

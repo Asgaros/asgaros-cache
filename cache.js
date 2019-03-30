@@ -187,7 +187,7 @@ function cacheable_request(component, identifier, callback, location) {
         version = data.version;
     }
 
-    location = location+'?component='+component+'&identifier='+identifier+'&version='+version;
+    location = location+'component='+component+'&identifier='+identifier+'&version='+version;
 
     $.ajax({
         url: location

@@ -102,7 +102,12 @@ function cacheable_endpoint($component, $identifier, $callback) {
     $data = cache_fetch($component, $identifier);
 
     if ($data === false) {
-        $data = $callback();
+        if (is_callable($callback)) {
+            $data = $callback();
+        } else {
+            $data = $callback;
+        }
+
         $data = cache_store($component, $identifier, $data);
     }
 

@@ -165,8 +165,10 @@ function announce_cacheable_view(component, identifier, version) {
     }
 }
 
+var fallback_destination = 'http://localhost/caching/index.php';
+
 function load_cacheable_view(component, identifier, destination) {
-    var location = 'http://localhost/caching/index.php?component='+component+'&identifier='+identifier;
+    var location = fallback_destination+'?component='+component+'&identifier='+identifier;
 
     $.ajax({
         url: location

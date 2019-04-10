@@ -1,5 +1,7 @@
 <?php
 
+include('cache.php');
+
 // A debug-output function.
 function debug_output($object) {
     print_r('<pre style="font-size: 11px;">');
@@ -7,9 +9,10 @@ function debug_output($object) {
     print_r('</pre>');
 }
 
-// Installs time-test-data.
-if (!empty($_GET['install_time_test_data']) && $_GET['install_time_test_data'] === '1') {
-    // PDO Documentation: http://php.net/manual/de/pdo.connections.php
+// Installs test-data.
+if (!empty($_GET['install_test_data']) && $_GET['install_test_data'] === '1') {
+    // Establish connection.
+    $connection = new PDO('mysql:host=localhost;dbname=caching', 'root', '');
 
     // Get the first test-data.
     $query = $connection->prepare('SELECT * FROM data_storage WHERE id = 1;');
@@ -21,18 +24,19 @@ if (!empty($_GET['install_time_test_data']) && $_GET['install_time_test_data'] =
 
     // Create cache-object.
     $data = array();
-    $data['component']  = 'time-test';
-    $data['query_id']   = '1';
+    $data['component']  = 'performance-test';
+    $data['identifier'] = 'data';
     $data['type']       = 'data';
     $data['version']    = 1;
     $data['data']       = $json;
 
     // Save into cache-table.
-    $statement = $connection->prepare("INSERT INTO data_cache (component, query_id, type, version, data) VALUES (:component, :query_id, :type, :version, :data);");
+    $statement = $connection->prepare("INSERT INTO data_cache (component, identifier, type, version, data) VALUES (:component, :identifier, :type, :version, :data);");
     $statement->execute($data);
 
-    // Save into file.
-    $key = $data['component'].'_'.$data['query_id'];
+    // Create key.
+    $key = $data['component'].'_'.$data['identifier'];
+
     file_store($key, $data['data']);
 }
 
@@ -140,123 +144,43 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
 
 
 if (!empty($_GET['run_time_test']) && $_GET['run_time_test'] === '1') {
-    $loops = 99999;
-    $random = true;
+    $loops = 10;
+    $random = false;
 
     echo '<h1>Read '.$loops.' datasets</h1>';
 
     echo '<h2>Read from database</h2>';
-
-    // Start time-measurement.
-    $start = microtime(true);
-
-    // Run loops.
-    for ($i = 0; $i < $loops; $i++) {
-        access_data_via('sql', $random);
-    }
-
-    // Stop time-measurement and display result.
-    $time_elapsed_secs = microtime(true) - $start;
-    echo $time_elapsed_secs;
+    access_data_via('sql', $random, $loops);
 
     echo '<h2>Read from file</h2>';
-
-    // Start time-measurement.
-    $start = microtime(true);
-
-    // Run loops.
-    for ($i = 0; $i < $loops; $i++) {
-        access_data_via('file', $random);
-    }
-
-    // Stop time-measurement and display result.
-    $time_elapsed_secs = microtime(true) - $start;
-    echo $time_elapsed_secs;
-
+    access_data_via('file', $random, $loops);
 
     // Redis download:
     // php extension: https://pecl.php.net/package/redis/4.2.0/windows
     // windows server: https://github.com/dmajkic/redis/downloads
     // tutorial: https://www.tutorialspoint.com/redis/redis_php.htm
-
-    echo '<h2>Read from redis</h2>';
-
-    $redis = new Redis();
-    $redis->connect('127.0.0.1', 6379);
-
-    $key = 'time-test_example-dataset-1';
-    $result = file_fetch($key);
-
-    // Save data into redis-server.
-    $redis->set('time-test_example-dataset-1', $result);
-    $redis->set('time-test_example-dataset-2', $result);
-
-    // Start time-measurement.
-    $start = microtime(true);
-
-    // Run loops.
-    for ($i = 0; $i < $loops; $i++) {
-        access_data_via('redis', $random);
-    }
-
-    // Stop time-measurement and display result.
-    $time_needed = microtime(true) - $start;
-    echo $time_needed;
-
-
-
-
-
+    //echo '<h2>Read from redis</h2>';
+    //access_data_via('redis', $random, $loops);
 
     // APCu
     // https://pecl.php.net/package/APCu/5.1.15/windows
-
     echo '<h2>Read from APCu</h2>';
-
-    $key = 'time-test_example-dataset-1';
-    $result = file_fetch($key);
-
-    // Save data
-    apcu_add('time-test_example-dataset-1', $result);
-    apcu_add('time-test_example-dataset-2', $result);
-
-    // Start time-measurement.
-    $start = microtime(true);
-
-    // Run loops.
-    for ($i = 0; $i < $loops; $i++) {
-        access_data_via('apcu', $random);
-    }
-
-    // Stop time-measurement and display result.
-    $time_elapsed_secs = microtime(true) - $start;
-    echo $time_elapsed_secs;
-
-
-
-
-
-
-
-
-
+    access_data_via('apcu', $random, $loops);
 
     // Caching API
-
     echo '<h2>Read from Server Cache using API</h2>';
 
-    $key = 'time-test_example-dataset-1';
+    // Prepare APCu.
+    $key = 'performance-test_data-1';
     $result = file_fetch($key);
-
-    // Save data
-    cache_store('example', 'time-test', $result);
+    cache_store('performance-test', 'data-1', $result);
 
     // Start time-measurement.
     $start = microtime(true);
 
     // Run loops.
     for ($i = 0; $i < $loops; $i++) {
-        cache_fetch('example', 'time-test');
+        $result = cache_fetch('performance-test', 'data-1');
     }
 
     // Stop time-measurement and display result.
@@ -264,35 +188,92 @@ if (!empty($_GET['run_time_test']) && $_GET['run_time_test'] === '1') {
     echo $time_elapsed_secs;
 }
 
-function access_data_via($type, $random = false) {
-    $id = 'example-dataset-1';
+function access_data_via($type, $random = false, $loops = 10) {
+    $id = 'data-1';
 
     if ($random) {
-        $id = 'example-dataset-'.rand(1,2);
+        $id = 'data-'.rand(1,2);
     }
 
     if ($type === 'sql') {
-        global $connection;
-        $query = $connection->prepare('SELECT * FROM data_cache WHERE component = "time-test" AND query_id = "'.$id.'";');
-        $query->execute();
-        $result = $query->fetch(PDO::FETCH_ASSOC);
+        // Establish connection.
+        $connection = new PDO('mysql:host=localhost;dbname=caching', 'root', '');
+
+        // Start time-measurement.
+        $start = microtime(true);
+
+        // Run loops.
+        for ($i = 0; $i < $loops; $i++) {
+            $query = $connection->prepare('SELECT * FROM data_cache WHERE component = "performance-test" AND identifier = "'.$id.'";');
+            $query->execute();
+            $result = $query->fetch(PDO::FETCH_ASSOC);
+        }
+
+        // Stop time-measurement and display result.
+        $time_elapsed_secs = microtime(true) - $start;
+        echo $time_elapsed_secs;
         return;
     }
 
     if ($type === 'file') {
-        $key = 'time-test_'.$id;
-        $result = file_fetch($key);
+        // Set key.
+        $key = 'performance-test_'.$id;
+
+        // Start time-measurement.
+        $start = microtime(true);
+
+        // Run loops.
+        for ($i = 0; $i < $loops; $i++) {
+            $result = file_fetch($key);
+        }
+
+        // Stop time-measurement and display result.
+        $time_elapsed_secs = microtime(true) - $start;
+        echo $time_elapsed_secs;
         return;
     }
 
     if ($type === 'redis') {
-        global $redis;
-        $result = $redis->get('time-test_'.$id);
+        // Prepare Redis.
+        $redis = new Redis();
+        $redis->connect('127.0.0.1', 6379);
+        $key = 'performance-test_data-1';
+        $result = file_fetch($key);
+        $redis->set('performance-test_data-1', $result);
+        $redis->set('performance-test_data-2', $result);
+
+        // Start time-measurement.
+        $start = microtime(true);
+
+        // Run loops.
+        for ($i = 0; $i < $loops; $i++) {
+            $result = $redis->get('performance-test_'.$id);
+        }
+
+        // Stop time-measurement and display result.
+        $time_elapsed_secs = microtime(true) - $start;
+        echo $time_elapsed_secs;
         return;
     }
 
     if ($type === 'apcu') {
-        $result = apcu_fetch('time-test_'.$id);
+        // Prepare APCu.
+        $key = 'performance-test_data-1';
+        $result = file_fetch($key);
+        apcu_add('performance-test_data-1', $result);
+        apcu_add('performance-test_data-2', $result);
+
+        // Start time-measurement.
+        $start = microtime(true);
+
+        // Run loops.
+        for ($i = 0; $i < $loops; $i++) {
+            $result = apcu_fetch('performance-test_'.$id);
+        }
+
+        // Stop time-measurement and display result.
+        $time_elapsed_secs = microtime(true) - $start;
+        echo $time_elapsed_secs;
         return;
     }
 }

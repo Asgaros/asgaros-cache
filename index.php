@@ -1,10 +1,6 @@
 <?php
 
-// Open database-connection.
-$connection = new PDO('mysql:host=localhost;dbname=caching', 'root', '');
-
 // Load libraries.
-require('csc_helper.php');
 require('cache.php');
 
 // Loads some example-data from a database.

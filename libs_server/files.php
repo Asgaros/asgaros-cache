@@ -86,18 +86,18 @@ function file_delete($key) {
 
 function file_delete_all() {
     $path = getcwd().'\\file-cache';
-
-    recursiveDelete($path);
+    recursive_delete($path);
+    return true;
 }
 
-function recursiveDelete($str) {
+function recursive_delete($str) {
     if (is_file($str)) {
         return @unlink($str);
     } else if (is_dir($str)) {
         $scan = glob(rtrim($str, '/').'/*');
 
         foreach ($scan as $path) {
-            recursiveDelete($path);
+            recursive_delete($path);
         }
 
         return @rmdir($str);

@@ -77,7 +77,14 @@ function cache_flush() {
         return false;
     }
 
-    localStorage.clear();
+    for (var i = 0; i < localStorage.length; i++) {
+        var prefix = localStorage.key(i).substring(0, 12);
+
+        if (prefix == 'cached-view-' || prefix == 'cached-data-') {
+            var key = localStorage.key(i);
+            localStorage.removeItem(key);
+        }
+    }
 }
 
 // Ensures that the announced views in cookies exist in the client-cache.

@@ -18,7 +18,7 @@ function server_cache_example() {
     cache_delete('example', 'server-cache');
 
     if (!cache_check('example', 'server-cache', $data->version)) {
-        echo '</p>Data could not get verified!</p>';
+        echo '<p>Data could not get verified!</p>';
     }
 }
 

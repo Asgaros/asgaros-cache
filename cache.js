@@ -145,8 +145,13 @@ function process_cacheable_views() {
                 $(this).html(data.data);
             }
         } else {
-            cache_store(component, identifier, 'view', data, version);
-            announce_cacheable_view(component, identifier, version);
+            // Put the view into the cache.
+            var store = cache_store(component, identifier, 'view', data, version);
+
+            // Only announce the view if it could get cached.
+            if (store !== false) {
+                announce_cacheable_view(component, identifier, version);
+            }
         }
     });
 }
@@ -181,8 +186,13 @@ function load_cacheable_view(component, identifier, destination) {
         url: location
     }).done(function(response) {
         data = JSON.parse(response);
-        cache_store(component, identifier, 'view', data.data, data.version);
-        announce_cacheable_view(component, identifier, data.version);
+        var store = cache_store(component, identifier, 'view', data.data, data.version);
+
+        // Only announce the view if it could get cached.
+        if (store !== false) {
+            announce_cacheable_view(component, identifier, data.version);
+        }
+
         $(destination).html(data.data);
         console.log('Load view from endpoint ...');
     });

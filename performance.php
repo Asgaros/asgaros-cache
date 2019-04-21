@@ -48,15 +48,17 @@ if (!empty($_GET['install_test_data']) && $_GET['install_test_data'] === '1') {
 
 
 if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
-    global $connection;
+    $loops = 99;
+
+    // Prepare data.
+    $connection = new PDO('mysql:host=localhost;dbname=caching', 'root', '');
     $query = $connection->prepare('SELECT * FROM data_cache WHERE component = "time-test" AND query_id = "example-dataset-1";');
     $query->execute();
     $result = $query->fetch(PDO::FETCH_ASSOC);
-
-    $loops = 99;
+    $data = json_decode($result['data']);
 
     echo '<h1>Write '.$loops.' datasets</h1>';
-
+    
     echo '<h2>Write to database</h2>';
 
     // Start time-measurement.
@@ -70,13 +72,6 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
     // Stop time-measurement and display result.
     echo (microtime(true) - $start);
 
-
-
-
-
-
-
-
     echo '<h2>Write to file</h2>';
 
     // Start time-measurement.
@@ -84,16 +79,12 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
 
     // Run loops.
     for ($i = 0; $i < $loops; $i++) {
-        write_data_via('file', $result['data'], $i);
+        write_data_via('file', $data, $i);
     }
 
     // Stop time-measurement and display result.
     echo (microtime(true) - $start);
-
-
-
-
-
+    return;
 
     echo '<h2>Write to redis</h2>';
 
@@ -111,11 +102,6 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
     // Stop time-measurement and display result.
     echo (microtime(true) - $start);
 
-
-
-
-
-
     echo '<h2>Write to APCu</h2>';
 
     // Start time-measurement.
@@ -128,29 +114,33 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
 
     // Stop time-measurement and display result.
     echo (microtime(true) - $start);
+
+
+    // Caching API
+    echo '<h2>Write to Server Cache using API</h2>';
+
+    // Start time-measurement.
+    $start = microtime(true);
+
+    // Run loops.
+    for ($i = 0; $i < $loops; $i++) {
+        $result = cache_store('performance-test', 'write-test-'.$i, $data);
+    }
+
+    // Stop time-measurement and display result.
+    $time_elapsed_secs = microtime(true) - $start;
+    echo $time_elapsed_secs;
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 if (!empty($_GET['run_time_test']) && $_GET['run_time_test'] === '1') {
-    $loops = 10;
+    $loops = 99999;
     $random = false;
 
     echo '<h1>Read '.$loops.' datasets</h1>';
 
     echo '<h2>Read from database</h2>';
-    access_data_via('sql', $random, $loops);
+    //access_data_via('sql', $random, $loops);
 
     echo '<h2>Read from file</h2>';
     access_data_via('file', $random, $loops);
@@ -159,8 +149,8 @@ if (!empty($_GET['run_time_test']) && $_GET['run_time_test'] === '1') {
     // php extension: https://pecl.php.net/package/redis/4.2.0/windows
     // windows server: https://github.com/dmajkic/redis/downloads
     // tutorial: https://www.tutorialspoint.com/redis/redis_php.htm
-    //echo '<h2>Read from redis</h2>';
-    //access_data_via('redis', $random, $loops);
+    echo '<h2>Read from redis</h2>';
+    access_data_via('redis', $random, $loops);
 
     // APCu
     // https://pecl.php.net/package/APCu/5.1.15/windows
@@ -191,10 +181,6 @@ if (!empty($_GET['run_time_test']) && $_GET['run_time_test'] === '1') {
 function access_data_via($type, $random = false, $loops = 10) {
     $id = 'data-1';
 
-    if ($random) {
-        $id = 'data-'.rand(1,2);
-    }
-
     if ($type === 'sql') {
         // Establish connection.
         $connection = new PDO('mysql:host=localhost;dbname=caching', 'root', '');
@@ -204,6 +190,10 @@ function access_data_via($type, $random = false, $loops = 10) {
 
         // Run loops.
         for ($i = 0; $i < $loops; $i++) {
+            if ($random) {
+                $id = 'data-'.rand(1,2);
+            }
+
             $query = $connection->prepare('SELECT * FROM data_cache WHERE component = "performance-test" AND identifier = "'.$id.'";');
             $query->execute();
             $result = $query->fetch(PDO::FETCH_ASSOC);
@@ -216,14 +206,18 @@ function access_data_via($type, $random = false, $loops = 10) {
     }
 
     if ($type === 'file') {
-        // Set key.
-        $key = 'performance-test_'.$id;
-
         // Start time-measurement.
         $start = microtime(true);
 
         // Run loops.
         for ($i = 0; $i < $loops; $i++) {
+            if ($random) {
+                $id = 'data-'.rand(1,2);
+            }
+
+            // Set key.
+            $key = 'performance-test_'.$id;
+
             $result = file_fetch($key);
         }
 
@@ -247,6 +241,10 @@ function access_data_via($type, $random = false, $loops = 10) {
 
         // Run loops.
         for ($i = 0; $i < $loops; $i++) {
+            if ($random) {
+                $id = 'data-'.rand(1,2);
+            }
+
             $result = $redis->get('performance-test_'.$id);
         }
 
@@ -268,6 +266,10 @@ function access_data_via($type, $random = false, $loops = 10) {
 
         // Run loops.
         for ($i = 0; $i < $loops; $i++) {
+            if ($random) {
+                $id = 'data-'.rand(1,2);
+            }
+
             $result = apcu_fetch('performance-test_'.$id);
         }
 

@@ -58,7 +58,7 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
     $data = json_decode($result['data']);
 
     echo '<h1>Write '.$loops.' datasets</h1>';
-    
+
     echo '<h2>Write to database</h2>';
 
     // Start time-measurement.
@@ -66,7 +66,7 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
 
     // Run loops.
     for ($i = 0; $i < $loops; $i++) {
-        //write_data_via('sql', $result['data'], $i);
+        write_data_via('sql', $result['data'], $i);
     }
 
     // Stop time-measurement and display result.
@@ -84,7 +84,6 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
 
     // Stop time-measurement and display result.
     echo (microtime(true) - $start);
-    return;
 
     echo '<h2>Write to redis</h2>';
 
@@ -114,7 +113,6 @@ if (!empty($_GET['run_write_test']) && $_GET['run_write_test'] === '1') {
 
     // Stop time-measurement and display result.
     echo (microtime(true) - $start);
-
 
     // Caching API
     echo '<h2>Write to Server Cache using API</h2>';

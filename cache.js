@@ -2,8 +2,11 @@ $ = (typeof $ === 'undefined' && typeof jQuery !== 'undefined') ? jQuery : $;
 
 // Run certain logic as soon as the DOM-tree is ready for manipulation.
 $(document).ready(function() {
+    var t1 = performance.now();
     validate_cacheable_views();
     process_cacheable_views();
+    var t2 = performance.now();
+    console.log('Execution of view validation and processing takes: '+(t2-t1));
 });
 
 function cache_store(component, identifier, type, data, version) {

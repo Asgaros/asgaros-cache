@@ -29,7 +29,7 @@ function cache_the_content($content) {
 
     return $content;
 }
-//add_filter('the_content', 'cache_the_content');
+add_filter('the_content', 'cache_the_content');
 
 
 

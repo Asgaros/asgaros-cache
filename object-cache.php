@@ -4,7 +4,7 @@
 Plugin Name: Caching Drop-In
 */
 
-include_once(ABSPATH.'wp-content/plugins/caching/csc/cache.php');
+include_once(ABSPATH.'wp-content/plugins/asgaros-cache/cache.php');
 
 // Adds data to the cache, if the cache key doesn't already exist.
 function wp_cache_add($key, $data, $group = '', $expire = 0) {

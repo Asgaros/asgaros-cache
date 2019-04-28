@@ -1,6 +1,6 @@
 <?php
 
-include('cache.php');
+include('../cache.php');
 
 // A debug-output function.
 function debug_output($object) {

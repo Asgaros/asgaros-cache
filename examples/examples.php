@@ -1,5 +1,24 @@
 <?php
 
+include('../cache.php');
+
+// Loads some example-data from a database.
+function get_some_data() {
+    // Open database-connection.
+    $connection = new PDO('mysql:host=localhost;dbname=caching', 'root', '');
+
+    // Get some test-data.
+    $query = $connection->prepare('SELECT * FROM data_storage WHERE id = 1;');
+    $query->execute();
+    $data = $query->fetch(PDO::FETCH_ASSOC);
+
+    // Close database-connection.
+    $connection = null;
+
+    // Return data.
+    return $data;
+}
+
 function server_cache_example() {
     echo '<h1>Server Cache Example</h1>';
 
@@ -22,4 +41,4 @@ function server_cache_example() {
     }
 }
 
-//server_cache_example();
+server_cache_example();

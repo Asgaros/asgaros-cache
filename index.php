@@ -40,13 +40,6 @@ $callback_example_test_view_output = function() {
 };
 
 require('endpoints.php');
-require('examples.php');
-
-
-
-
-
-
 
 
 // Outputs a normal HTML-document.

@@ -19,6 +19,40 @@ function client_cache_front_scripts() {
 }
 add_action('wp_enqueue_scripts', 'client_cache_front_scripts');
 
+// Asgaros Forum Example for Caching of Overview as a Cacheable View.
+add_filter('pre_do_shortcode_tag', 'pre_do_shortcode_cacheable_view', 10, 4);
+function pre_do_shortcode_cacheable_view($return, $tag, $attr, $m) {
+    if ($tag == 'forum') {
+        global $asgarosforum;
+
+        if ($asgarosforum->current_view == 'overview') {
+            $view = cache_fetch('asgaros-forum', 'overview');
+
+            if ($view !== false) {
+                // Remove item if its older than 30 seconds.
+                if ($view->version < (time() - 30)) {
+                    cache_delete('asgaros-forum', 'overview');
+                } else {
+                    return cacheable_view('asgaros-forum', 'overview', $return);
+                }
+            }
+        }
+    }
+
+    return $return;
+}
+add_filter('do_shortcode_tag', 'do_shortcode_cacheable_view', 10, 4);
+function do_shortcode_cacheable_view($return, $tag, $attr, $m) {
+    if ($tag == 'forum') {
+        global $asgarosforum;
+
+        if ($asgarosforum->current_view == 'overview') {
+            return cacheable_view('asgaros-forum', 'overview', $return);
+        }
+    }
+
+    return $return;
+}
 
 
 
@@ -29,7 +63,7 @@ function cache_the_content($content) {
 
     return $content;
 }
-add_filter('the_content', 'cache_the_content');
+//add_filter('the_content', 'cache_the_content');
 
 
 
